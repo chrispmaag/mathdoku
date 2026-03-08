@@ -6,6 +6,11 @@ let CELL_PX = 100;    // cell size in px
 
 const CELL_PX_BY_SIZE = { 3: 100, 4: 85, 5: 88 };
 
+function computeCellPx() {
+  const maxFromViewport = Math.floor((window.innerWidth - 48) / SIZE);
+  return Math.min(CELL_PX_BY_SIZE[SIZE], maxFromViewport);
+}
+
 // ── State ─────────────────────────────────────────────────────────────────────
 let solution = [];
 let userGrid = [];
@@ -292,12 +297,55 @@ function checkWin() {
   }
 }
 
+// ── Mobile Keypad ─────────────────────────────────────────────────────────────
+const isTouchDevice = () => navigator.maxTouchPoints > 0 || 'ontouchstart' in window;
+
+function buildKeypad() {
+  const container = document.getElementById('keypad-numbers');
+  container.innerHTML = '';
+  for (let n = 1; n <= SIZE; n++) {
+    const btn = document.createElement('button');
+    btn.className = 'keypad-btn';
+    btn.textContent = n;
+    btn.addEventListener('click', () => keypadInput(n));
+    container.appendChild(btn);
+  }
+  const clear = document.createElement('button');
+  clear.className = 'keypad-btn clear-btn';
+  clear.textContent = '⌫';
+  clear.addEventListener('click', () => keypadInput(0));
+  container.appendChild(clear);
+}
+
+function showKeypad() {
+  document.getElementById('keypad').classList.add('open');
+  document.getElementById('keypad-overlay').classList.add('open');
+}
+
+function hideKeypad() {
+  document.getElementById('keypad').classList.remove('open');
+  document.getElementById('keypad-overlay').classList.remove('open');
+}
+
+function keypadInput(n) {
+  if (selectedCell === null) return;
+  userGrid[selectedCell] = n;
+  validate();
+  checkWin();
+  renderBoard();
+  if (!isComplete) hideKeypad();
+}
+
+document.getElementById('keypad-close').addEventListener('click', hideKeypad);
+document.getElementById('keypad-overlay').addEventListener('click', hideKeypad);
+
 // ── Input Handling ────────────────────────────────────────────────────────────
 document.getElementById('board').addEventListener('click', (e) => {
   const cell = e.target.closest('.cell');
   if (!cell) return;
   selectedCell = parseInt(cell.dataset.idx, 10);
   renderBoard();
+  if (isTouchDevice()) showKeypad();
 });
 
 document.addEventListener('keydown', (e) => {
@@ -323,15 +371,52 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'ArrowRight' && c < SIZE - 1) { e.preventDefault(); selectedCell += 1;    renderBoard(); }
 });
 
+// ── Per-difficulty State ──────────────────────────────────────────────────────
+const savedStates = {};
+
+function saveState() {
+  savedStates[SIZE] = {
+    solution:      solution.slice(),
+    userGrid:      userGrid.slice(),
+    cages:         cages,
+    cellToCage:    cellToCage.slice(),
+    selectedCell,
+    violatingCells: new Set(violatingCells),
+    isComplete,
+  };
+}
+
+function loadState(size) {
+  SIZE   = size;
+  CELL_PX = computeCellPx();
+  updateSubtitle();
+  if (savedStates[SIZE]) {
+    const s = savedStates[SIZE];
+    solution       = s.solution;
+    userGrid       = s.userGrid;
+    cages          = s.cages;
+    cellToCage     = s.cellToCage;
+    selectedCell   = s.selectedCell;
+    violatingCells = new Set(s.violatingCells);
+    isComplete     = s.isComplete;
+    document.getElementById('message').classList.toggle('hidden', !isComplete);
+    hideKeypad();
+    buildKeypad();
+    renderBoard();
+  } else {
+    newPuzzle();
+  }
+}
+
 // ── Difficulty Picker ─────────────────────────────────────────────────────────
 document.querySelectorAll('.diff-btn').forEach(btn => {
   btn.addEventListener('click', () => {
+    const newSize = parseInt(btn.dataset.size, 10);
+    if (newSize === SIZE) return;
+    saveState();
     document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    SIZE = parseInt(btn.dataset.size, 10);
-    CELL_PX = CELL_PX_BY_SIZE[SIZE];
-    updateSubtitle();
-    newPuzzle();
+    loadState(newSize);
   });
 });
 
@@ -359,11 +444,38 @@ function newPuzzle() {
 
   assignColors(cages);
   document.getElementById('message').classList.add('hidden');
+  hideKeypad();
+  buildKeypad();
   renderBoard();
 }
 
+// ── Help Modal ────────────────────────────────────────────────────────────────
+function openHelp() {
+  document.getElementById('help-overlay').classList.add('open');
+  document.getElementById('help-modal').classList.add('open');
+}
+
+function closeHelp() {
+  document.getElementById('help-overlay').classList.remove('open');
+  document.getElementById('help-modal').classList.remove('open');
+}
+
+document.getElementById('help-btn').addEventListener('click', openHelp);
+document.getElementById('help-close').addEventListener('click', closeHelp);
+document.getElementById('help-overlay').addEventListener('click', closeHelp);
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 document.getElementById('new-puzzle').addEventListener('click', newPuzzle);
-CELL_PX = CELL_PX_BY_SIZE[SIZE];
+
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    CELL_PX = computeCellPx();
+    renderBoard();
+  }, 100);
+});
+
+CELL_PX = computeCellPx();
 updateSubtitle();
 newPuzzle();

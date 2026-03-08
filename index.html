@@ -7,6 +7,110 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- Help button -->
+  <button id="help-btn" aria-label="How to play">?</button>
+
+  <!-- How to Play overlay -->
+  <div id="help-overlay"></div>
+  <div id="help-modal" role="dialog" aria-modal="true" aria-label="How to Play">
+    <div id="help-modal-header">
+      <h2>How to Play</h2>
+      <button id="help-close" aria-label="Close">✕</button>
+    </div>
+    <div id="help-modal-body">
+
+      <section class="help-section">
+        <h3>The Goal</h3>
+        <p>Fill every cell in the grid with a number so that each number appears <strong>exactly once</strong> in every row and every column — just like Sudoku, but smaller.</p>
+        <ul>
+          <li>Easy (3×3): use numbers <strong>1, 2, 3</strong></li>
+          <li>Medium (4×4): use numbers <strong>1, 2, 3, 4</strong></li>
+          <li>Hard (5×5): use numbers <strong>1, 2, 3, 4, 5</strong></li>
+        </ul>
+      </section>
+
+      <section class="help-section">
+        <h3>Cage Hints</h3>
+        <p>Colored groups of cells are called <strong>cages</strong>. Each cage shows a hint in its top-left corner — a target number and an operation. The numbers you place in a cage must produce the target when the operation is applied.</p>
+        <table class="ops-table">
+          <thead><tr><th>Hint</th><th>Meaning</th><th>Example</th></tr></thead>
+          <tbody>
+            <tr><td><code>=3</code></td><td>Cell equals 3</td><td>Place <strong>3</strong></td></tr>
+            <tr><td><code>+6</code></td><td>Cells sum to 6</td><td>2 + 4 = 6</td></tr>
+            <tr><td><code>×6</code></td><td>Cells multiply to 6</td><td>2 × 3 = 6</td></tr>
+            <tr><td><code>−1</code></td><td>Difference equals 1</td><td>3 − 2 = 1</td></tr>
+            <tr><td><code>÷2</code></td><td>Larger ÷ smaller = 2</td><td>4 ÷ 2 = 2</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="help-section">
+        <h3>Example Puzzle</h3>
+        <p>Here is a solved 3×3 puzzle. Notice how each row and column contains 1, 2, and 3 exactly once, and every cage hint is satisfied.</p>
+
+        <div class="sample-wrap">
+          <!-- Static 3×3 solved board:  2 1 3 / 1 3 2 / 3 2 1
+               Cages:
+                 A (amber)   cells 0,3  → +3  (2+1)
+                 B (emerald) cells 1,2  → ÷3  (3÷1)
+                 C (blue)    cells 4,5  → ×6  (3×2)
+                 D (rose)    cells 6,7  → +5  (3+2)
+                 E (violet)  cell  8    → =1
+          -->
+          <div class="sample-board">
+            <!-- row 0 -->
+            <div class="sc" style="background:#fde68a;border-top:none;border-left:none;border-right:3px solid #1e293b;border-bottom:1px solid #94a3b8;">
+              <span class="sh">+3</span><span class="sv">2</span></div>
+            <div class="sc" style="background:#a7f3d0;border-top:none;border-left:3px solid #1e293b;border-right:1px solid #94a3b8;border-bottom:3px solid #1e293b;">
+              <span class="sh">÷3</span><span class="sv">1</span></div>
+            <div class="sc" style="background:#a7f3d0;border-top:none;border-left:1px solid #94a3b8;border-right:none;border-bottom:3px solid #1e293b;">
+              <span class="sv">3</span></div>
+            <!-- row 1 -->
+            <div class="sc" style="background:#fde68a;border-top:1px solid #94a3b8;border-left:none;border-right:3px solid #1e293b;border-bottom:3px solid #1e293b;">
+              <span class="sv">1</span></div>
+            <div class="sc" style="background:#bfdbfe;border-top:3px solid #1e293b;border-left:3px solid #1e293b;border-right:1px solid #94a3b8;border-bottom:3px solid #1e293b;">
+              <span class="sh">×6</span><span class="sv">3</span></div>
+            <div class="sc" style="background:#bfdbfe;border-top:3px solid #1e293b;border-left:1px solid #94a3b8;border-right:none;border-bottom:3px solid #1e293b;">
+              <span class="sv">2</span></div>
+            <!-- row 2 -->
+            <div class="sc" style="background:#fecaca;border-top:3px solid #1e293b;border-left:none;border-right:1px solid #94a3b8;border-bottom:none;">
+              <span class="sh">+5</span><span class="sv">3</span></div>
+            <div class="sc" style="background:#fecaca;border-top:3px solid #1e293b;border-left:1px solid #94a3b8;border-right:3px solid #1e293b;border-bottom:none;">
+              <span class="sv">2</span></div>
+            <div class="sc" style="background:#ddd6fe;border-top:3px solid #1e293b;border-left:3px solid #1e293b;border-right:none;border-bottom:none;">
+              <span class="sh">=1</span><span class="sv">1</span></div>
+          </div>
+
+          <div class="sample-legend">
+            <div class="legend-row"><span class="legend-swatch" style="background:#fde68a;"></span><strong>+3</strong>: cells 2 and 1 → 2+1 = 3</div>
+            <div class="legend-row"><span class="legend-swatch" style="background:#a7f3d0;"></span><strong>÷3</strong>: cells 1 and 3 → 3÷1 = 3</div>
+            <div class="legend-row"><span class="legend-swatch" style="background:#bfdbfe;"></span><strong>×6</strong>: cells 3 and 2 → 3×2 = 6</div>
+            <div class="legend-row"><span class="legend-swatch" style="background:#fecaca;"></span><strong>+5</strong>: cells 3 and 2 → 3+2 = 5</div>
+            <div class="legend-row"><span class="legend-swatch" style="background:#ddd6fe;"></span><strong>=1</strong>: cell must equal 1</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="help-section">
+        <h3>Error Highlighting</h3>
+        <p>Cells turn <span class="err-sample">red</span> when a rule is broken — duplicate in a row or column, or a cage whose numbers don't match the hint. Fix the error and the highlight clears automatically.</p>
+      </section>
+
+      <section class="help-section">
+        <h3>Controls</h3>
+        <table class="ops-table">
+          <tbody>
+            <tr><td>Tap / Click a cell</td><td>Select it</td></tr>
+            <tr><td>Type a number</td><td>Fill the selected cell</td></tr>
+            <tr><td>Backspace / Delete</td><td>Clear the selected cell</td></tr>
+            <tr><td>Arrow keys</td><td>Move selection</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+    </div>
+  </div>
+
   <div id="app">
     <h1>Mathdoku</h1>
 
@@ -32,6 +136,17 @@
     </div>
     <button id="new-puzzle">New Puzzle</button>
   </div>
+
+  <!-- Mobile keypad -->
+  <div id="keypad-overlay"></div>
+  <div id="keypad" aria-label="Number keypad">
+    <div id="keypad-header">
+      <span id="keypad-title">Enter a number</span>
+      <button id="keypad-close" aria-label="Close">✕</button>
+    </div>
+    <div id="keypad-numbers"><!-- buttons injected by JS --></div>
+  </div>
+
   <script src="script.js"></script>
 </body>
 </html>
